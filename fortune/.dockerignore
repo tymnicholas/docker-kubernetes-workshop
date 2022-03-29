@@ -1,0 +1,4 @@
+node_modules
+dockerfile
+
+#  ! prefix in front of file means except

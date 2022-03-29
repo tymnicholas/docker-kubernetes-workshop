@@ -1,0 +1,29 @@
+ARG NODE_VER=17
+
+FROM node:${NODE_VER}
+
+# ARG
+ARG APP_DIR=/app
+
+ENV PORT=4000
+ENV INSTANCE_HASH=aaa111
+ENV INSTANCE_NAME=nick-dov-bear
+
+# cd in APP_DIR
+WORKDIR ${APP_DIR}
+
+ADD main.js .
+ADD package.json .
+ADD package-lock.json .
+ADD public public
+ADD views views
+
+RUN npm i
+
+HEALTHCHECK --interval= --timeout=5s --start-period= --retries=3 \
+    CMD curl -s -f http://localhost:${PORT}/ready > /dev/null || exit 1
+
+# not necessary, just for documentation purposes
+EXPOSE ${APP_PORT}
+
+ENTRYPOINT ["node", "main.js"]

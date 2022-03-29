@@ -1,0 +1,29 @@
+ARG NODE_VER=17
+
+FROM node:${NODE_VER}
+
+# build strage
+ARG APP_DIR=/app
+
+# cd in APP_DIR
+WORKDIR ${APP_DIR}
+
+ADD main.js .
+ADD package.json .
+ADD package-lock.json .
+ADD public public
+ADD views views
+
+RUN npm i
+# RUN npm ci for reference to package-lock.json
+
+HEALTHCHECK --interval= --timeout=5s --start-period= --retries=3 \
+    CMD curl -s -f http://localhost:${APP_PORT}/ready > /dev/null || exit 1
+
+# run stage
+ENV APP_PORT=5000
+
+# not necessary, just for documentation purposes
+EXPOSE ${APP_PORT}
+
+ENTRYPOINT ["node", "main.js"]
