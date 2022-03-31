@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bgg-cm
+data:
+  BGG_DB_USER: root
+  BGG_DB_HOST: mydb-svc.bggns.svc.cluster.local
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bgg-secret
+type: Opaque
+data:
+  BGG_DB_PASSWORD: Y2hhbmdlaXQ=
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bggapp-deploy
+  labels:
+    name: bggapp-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: bgg-pod
+  strategy:
+   type: RollingUpdate
+   rollingUpdate:
+     maxSurge: 1
+     maxUnavailable: 0
+
+  template:
+    metadata:
+      name: bgg-pod
+      labels:
+        name: bgg-pod
+      namespace: bggns
+    spec:
+      containers:
+      - name: bgg-backend-container
+        image: stackupiss/bgg-backend:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: bgg-pod-port
+          containerPort: 3000
+        envFrom:
+        - configMapRef: 
+            name: bgg-cm
+        - secretRef:
+            name: bgg-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bgg-app-svc
+  labels:
+    name: bgg-app-svc
+spec:
+  type: LoadBalancer
+  selector:
+    name: bgg-pod
+  ports:
+  - port: 8080
+    targetPort: bgg-pod-port
+
+    

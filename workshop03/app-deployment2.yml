@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bggapp-deploy2
+  labels:
+    name: bggapp-deploy2
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: bgg-pod2
+  strategy:
+   type: RollingUpdate
+   rollingUpdate:
+     maxSurge: 1
+     maxUnavailable: 0
+
+  template:
+    metadata:
+      name: bgg-pod2
+      labels:
+        name: bgg-pod2
+      namespace: ws3
+    spec:
+      containers:
+      - name: bgg-backend-container2
+        image: stackupiss/bgg-backend:v2
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: bgg-pod-port2
+          containerPort: 3000
+        envFrom:
+        - configMapRef: 
+            name: bgg-cm
+        - secretRef:
+            name: bgg-secret
+        args: 
+          - --prefix
+          - /v2
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: bgg-app-svc2
+  labels:
+    name: bgg-app-svc2
+spec:
+  type: LoadBalancer
+  selector:
+    name: bgg-pod2
+  ports:
+  - port: 8080
+    targetPort: bgg-pod-port2
+
+    

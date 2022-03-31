@@ -1,0 +1,34 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bgg-db-deploy
+  labels:
+    name: bgg-db-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bgg-database-pod
+  template:
+    metadata:
+      name: bgg-database-pod
+      labels:
+        app: bgg-database-pod
+    spec:
+      containers:
+      - image: stackupiss/bgg-database:v1
+        name: bgg-database-container
+        imagePullPolicy: IfNotPresent
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mydb-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: bgg-database-pod
+  ports:
+  - port: 3306
