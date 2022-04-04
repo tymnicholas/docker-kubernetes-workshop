@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wp-app-ing
+  labels:
+    name: wp-app-ing
+  annotations:
+    nginx.ingress.kubernetes.io/limit-connections: "10"
+    nginx.ingress.kubernetes.io/limit-rpm: '10'
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: wp-144.126.242.167.nip.io
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: wordpress-app-svc
+            port: 
+              number: 80

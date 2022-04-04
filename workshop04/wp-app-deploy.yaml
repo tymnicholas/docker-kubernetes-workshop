@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: wordpress-app-deploy
+    labels:
+        name: wordpress-app-deploy
+spec:
+    replicas: 1
+    selector:
+        matchLabels: 
+            name: wordpress-app-pod
+    template:
+        metadata:
+            name: wordpress-app-pod
+            labels:
+                name: wordpress-app-pod
+        spec:
+            affinity:
+                podAntiAffinity:
+                    requiredDuringSchedulingIgnoredDuringExecution:
+                        - labelSelector:
+                            matchLabels:
+                                name: wordpress-app-pod
+                            #topology key, means shouldn't be on the same key
+                          topologyKey: doks.digitalocean.com/node-id
+            containers:
+                - name: wordpress-app-container
+                  image: wordpress:latest
+                  imagePullPolicy: IfNotPresent
+                  volumeMounts:
+                      - name: wordpress-app-vol
+                        mountPath: /var/www/html
+                  env:
+                      - name: WORDPRESS_DB_HOST
+                        value: 'wordpress-mysql-cluster-mysql.yes.svc.cluster.local'
+                      - name: WORDPRESS_DB_USER
+                        value: 'root'
+                      - name: WORDPRESS_DB_NAME
+                        value: 'wordpress-db'
+                  envFrom:
+                    - secretRef: 
+                        name: wordpress-db-secret
+                  ports:
+                      - containerPort: 80
+            volumes:
+                - name: wordpress-app-vol
+                  persistentVolumeClaim:
+                      claimName: wordpress-app-data-pvc
+                
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: wordpress-app-svc
+    labels:
+        name: wordpress-app-svc
+spec:
+    type: ClusterIP
+    selector:
+        name: wordpress-app-pod
+    ports:
+        - port: 80
+          targetPort: 80
+---
