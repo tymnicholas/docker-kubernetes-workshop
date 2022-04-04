@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    name: dov-netpol-deny-all
+    labels:
+        name: dov-netpol-deny-all
+spec:
+    podSelector:
+        matchLabels:
+            name: dov-pod
+    policyTypes:
+        - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    name: dov-netpol-allow-fe
+    labels:
+        name: dov-netpol-allow-fe
+spec:
+    podSelector:
+        matchLabels:
+            name: dov-pod
+    policyTypes:
+        - Ingress
+    ingress:
+        - from:
+            - podSelector:
+                matchLabels:
+                    run: netshoot
+        - ports:
+            - port: 3000
+              protocol: tcp
